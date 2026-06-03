@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { PlusCircleIcon, TrashIcon } from 'lucide-react';
+import { PlusCircleIcon, SaveIcon, TrashIcon } from 'lucide-react';
 import axiosHelper from '@/lib/axios-helper';
 import { toast } from 'sonner';
 import z from 'zod';
@@ -47,7 +47,7 @@ export default function TableFields(props: { entityId: number }) {
   type FormData = z.infer<typeof FieldsUpdateSchema>;
   const form = useForm<FormData>({
     resolver: zodResolver(FieldsUpdateSchema),
-    defaultValues: {
+    values: {
       fields: fieldList
     }
   });
@@ -67,6 +67,12 @@ export default function TableFields(props: { entityId: number }) {
       isList: false,
       filterable: false
     });
+    setFormChanged(true);
+  };
+
+  const handleRemove = (index: number) => {
+    remove(index);
+    setFormChanged(true);
   };
 
   async function onSubmit(data: FormData) {
@@ -74,6 +80,7 @@ export default function TableFields(props: { entityId: number }) {
       await axiosHelper.put('/field/list', data.fields, { params: { entityId: props.entityId } });
       toast.success('Fields Updated Successfuly');
       form.reset();
+      setFormChanged(false);
     } catch (error) {
       toast.error('Fields Could not Bee Updated!');
     }
@@ -81,18 +88,11 @@ export default function TableFields(props: { entityId: number }) {
 
   return (
     <div className='space-y-4'>
-      <div className='flex items-center justify-between'>
-        <h3 className='font-semibold'>Fields</h3>
-        <Button type='button' variant='outline' onClick={handleAppend}>
-          <PlusCircleIcon className='mr-3' /> Add Field
-        </Button>
-      </div>
-
       <form id='form-update-fields' onSubmit={form.handleSubmit(onSubmit)} onChange={() => setFormChanged(true)} className='space-y-6'>
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className='w-[100px]'>Name</TableHead>
+              <TableHead>Name</TableHead>
               <TableHead>Type</TableHead>
               <TableHead>List</TableHead>
               <TableHead>Unique</TableHead>
@@ -111,8 +111,8 @@ export default function TableFields(props: { entityId: number }) {
                       name={`fields.${index}.name`}
                       control={form.control}
                       render={({ field, fieldState }) => (
-                        <Field data-invalid={fieldState.invalid}>
-                          <Input {...field} aria-invalid={fieldState.invalid} placeholder='field name' autoComplete='off' />
+                        <Field data-invalid={fieldState.invalid} className='w-28'>
+                          <Input {...field} aria-invalid={fieldState.invalid} placeholder='field name' autoComplete='off' className='w-full' />
                           {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
                         </Field>
                       )}
@@ -124,7 +124,7 @@ export default function TableFields(props: { entityId: number }) {
                       name={`fields.${index}.fieldTypeId`}
                       control={form.control}
                       render={({ field, fieldState }) => (
-                        <Field data-invalid={fieldState.invalid}>
+                        <Field data-invalid={fieldState.invalid} className='w-28'>
                           <Combobox
                             items={fieldTypes}
                             value={fieldTypes.find(x => x.id === field.value)?.name ?? ''}
@@ -206,21 +206,28 @@ export default function TableFields(props: { entityId: number }) {
                     />
                   </TableCell>
                   <TableCell className='text-right'>
-                    <Button type='button' variant='destructive' onClick={() => remove(index)}>
+                    <Button type='button' variant='destructive' onClick={() => handleRemove(index)}>
                       <TrashIcon color='red' />
                     </Button>
                   </TableCell>
                 </TableRow>
               ))}
+              <TableRow >
+                <TableCell colSpan={7} className='text-center text-sm text-gray-500'>
+                  <Button type='button' size='sm' variant='ghost' onClick={handleAppend} className='my-1 bg-gray-700'>
+                    <PlusCircleIcon className='mr-3' /> Add Field
+                  </Button>
+                </TableCell>
+            </TableRow>
           </TableBody>
           {formChanged && (
             <TableFooter>
               <TableRow>
-              <TableCell colSpan={7}>
-                  <Button type='submit' form='form-update-fields' className='mt-3 float-right'>
-                    Save Changes
+                <TableCell colSpan={7}>
+                  <Button type='submit' form='form-update-fields' className='mt-3 float-right bg-green-500 hover:bg-green-600 text-white'>
+                    <SaveIcon /> Save Changes
                   </Button>
-              </TableCell>
+                </TableCell>
               </TableRow>
             </TableFooter>
           )}

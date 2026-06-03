@@ -19,7 +19,7 @@ export default function CardProject(props: { project: Project }) {
   };
 
   return (
-    <Card size='sm' className='mx-auto w-full max-w-sm'>
+    <Card size='sm' className='mx-auto w-full'>
       <CardHeader>
         <CardTitle>{props.project.projectName}</CardTitle>
         <CardDescription>{props.project.createDate}</CardDescription>

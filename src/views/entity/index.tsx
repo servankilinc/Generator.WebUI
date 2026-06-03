@@ -21,9 +21,9 @@ export default function Entities() {
   return (
     <div className='flex flex-1 flex-col gap-4 p-4 pt-0'>
       <DialogNewEntity />
-      <div className='grid auto-rows-min gap-4 md:grid-cols-3'>
+      <div className='grid gap-4 md:grid-cols-2'>
         {entities != null && entities.length > 0 ? (
-          entities.map(e => <EntityCard key={`project-card-${e.id}`} entity={e} />)
+          entities.map(e => <EntityCard key={`entity-card-${e.id}`} entity={e} />)
         ) : (
           <>
             <div className='aspect-video rounded-xl bg-muted/50' />

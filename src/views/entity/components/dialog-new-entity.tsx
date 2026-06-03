@@ -209,7 +209,7 @@ export default function DialogNewEntity() {
               </TableHeader>
               <TableBody>
                 {fields.map((item, index) => (
-                  <TableRow key={item.name}>
+                  <TableRow key={item.id}>
                     <TableCell className='font-medium'>
                       {/* Field Name */}
                       <Controller

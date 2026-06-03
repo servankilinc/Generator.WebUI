@@ -2,8 +2,9 @@ import { useEffect, useState } from 'react';
 import { z } from 'zod';
 import { toast } from 'sonner';
 import axiosHelper from '@/lib/axios-helper';
-import { Pen } from 'lucide-react';
-// import { useAppDispatch } from '@/hooks';
+import { Pen, SaveIcon } from 'lucide-react';
+import { useAppDispatch } from '@/hooks';
+import { fetchEntities } from '@/redux/reducers/entitySlice';
 import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import type Dto from '@/models/dto/dto';
@@ -14,25 +15,28 @@ import { CrudTypeEnums } from '@/models/enums/enums';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogClose, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Field, FieldError, FieldGroup, FieldLabel } from '@/components/ui/field';
 import { Combobox, ComboboxContent, ComboboxEmpty, ComboboxInput, ComboboxItem, ComboboxList } from '@/components/ui/combobox';
+import { Separator } from '@/components/ui/separator';
 
 export default function DialogUpdateEntity({ ...props }: { entityId: number }) {
-  // const dispatch = useAppDispatch();
+  const dispatch = useAppDispatch();
 
   const [entity, setEntity] = useState<EntityUpdateDto>();
   const [dtos, setDtos] = useState<Dto[]>();
   const [isOpen, setIsOpen] = useState(false);
 
   useEffect(() => {
-    fetchEntity();
-    fetchDtos();
-  }, []);
+    if (isOpen) {
+      fetchEntity();
+      fetchDtos();
+    }
+  }, [isOpen]);
 
   const fetchEntity = async () => {
     try {
-      let response = await axiosHelper.get<EntityUpdateDto>('/entity/updateModel', {params:{'entityId': props.entityId}});
+      let response = await axiosHelper.get<EntityUpdateDto>('/entity/updateModel', { params: { entityId: props.entityId } });
       setEntity(response);
     } catch (error) {
       toast.error('Entity Could not Readed!');
@@ -52,13 +56,15 @@ export default function DialogUpdateEntity({ ...props }: { entityId: number }) {
 
   const form = useForm<FormData>({
     resolver: zodResolver(EntityUpdateSchema),
-    defaultValues: entity
+    values: entity
   });
 
   async function onSubmit(data: FormData) {
     try {
       await axiosHelper.put('/entity', data);
       toast.success('Entity Updated Successfuly');
+      dispatch(fetchEntities());
+      setIsOpen(false);
       form.reset();
     } catch (error) {
       toast.error('Entity Could not Bee Updated!');
@@ -68,14 +74,16 @@ export default function DialogUpdateEntity({ ...props }: { entityId: number }) {
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen} modal={false}>
       <DialogTrigger asChild>
-        <Button variant='outline' size='sm' className='float-right'>
-          <Pen />
+        <Button variant='ghost' className='bg-amber-600' size='sm'>
+          <Pen className='size-4 mr-2' /> Edit
         </Button>
       </DialogTrigger>
       <DialogContent className='max-w-3xl'>
         <DialogHeader>
           <DialogTitle>Edit {entity?.name}</DialogTitle>
         </DialogHeader>
+        
+        <Separator/>
 
         <form id='form-update-entity' onSubmit={form.handleSubmit(onSubmit)} className='space-y-6'>
           <FieldGroup>
@@ -103,6 +111,9 @@ export default function DialogUpdateEntity({ ...props }: { entityId: number }) {
                 </Field>
               )}
             />
+          </FieldGroup>
+
+          <FieldGroup className='grid grid-cols-1 gap-4 sm:grid-cols-3'>
             {/* Auditable */}
             <Controller
               name='auditable'
@@ -145,13 +156,18 @@ export default function DialogUpdateEntity({ ...props }: { entityId: number }) {
                 </Field>
               )}
             />
+          </FieldGroup>
+
+          <FieldGroup className='grid grid-cols-1 gap-4 sm:grid-cols-2'>
             {/* CreateDto */}
             <Controller
               name='createDtoId'
               control={form.control}
               render={({ field, fieldState }) => (
                 <Field data-invalid={fieldState.invalid}>
+                  <FieldLabel htmlFor='cmbx-create-dto'>Create DTO</FieldLabel>
                   <Combobox
+                    id='cmbx-create-dto'
                     items={dtos?.filter(f => f.crudTypeId == CrudTypeEnums.Create)}
                     value={dtos?.find(x => x.id === field.value)?.name ?? ''}
                     onValueChange={value => {
@@ -183,7 +199,9 @@ export default function DialogUpdateEntity({ ...props }: { entityId: number }) {
               control={form.control}
               render={({ field, fieldState }) => (
                 <Field data-invalid={fieldState.invalid}>
+                  <FieldLabel htmlFor='cmbx-update-dto'>Update DTO</FieldLabel>
                   <Combobox
+                    id='cmbx-update-dto'
                     items={dtos?.filter(f => f.crudTypeId == CrudTypeEnums.Update)}
                     value={dtos?.find(x => x.id === field.value)?.name ?? ''}
                     onValueChange={value => {
@@ -215,7 +233,9 @@ export default function DialogUpdateEntity({ ...props }: { entityId: number }) {
               control={form.control}
               render={({ field, fieldState }) => (
                 <Field data-invalid={fieldState.invalid}>
+                  <FieldLabel htmlFor='cmbx-delete-dto'>Delete DTO</FieldLabel>
                   <Combobox
+                    id='cmbx-delete-dto'
                     items={dtos?.filter(f => f.crudTypeId == CrudTypeEnums.Delete)}
                     value={dtos?.find(x => x.id === field.value)?.name ?? ''}
                     onValueChange={value => {
@@ -247,7 +267,9 @@ export default function DialogUpdateEntity({ ...props }: { entityId: number }) {
               control={form.control}
               render={({ field, fieldState }) => (
                 <Field data-invalid={fieldState.invalid}>
+                  <FieldLabel htmlFor='cmbx-report-dto'>Report DTO</FieldLabel>
                   <Combobox
+                    id='cmbx-report-dto'
                     items={dtos?.filter(f => f.crudTypeId == CrudTypeEnums.Read)}
                     value={dtos?.find(x => x.id === field.value)?.name ?? ''}
                     onValueChange={value => {
@@ -279,7 +301,9 @@ export default function DialogUpdateEntity({ ...props }: { entityId: number }) {
               control={form.control}
               render={({ field, fieldState }) => (
                 <Field data-invalid={fieldState.invalid}>
+                  <FieldLabel htmlFor='cmbx-basic-response-dto'>Basic Response DTO</FieldLabel>
                   <Combobox
+                    id='cmbx-basic-response-dto'
                     items={dtos?.filter(f => f.crudTypeId == CrudTypeEnums.Read)}
                     value={dtos?.find(x => x.id === field.value)?.name ?? ''}
                     onValueChange={value => {
@@ -311,7 +335,9 @@ export default function DialogUpdateEntity({ ...props }: { entityId: number }) {
               control={form.control}
               render={({ field, fieldState }) => (
                 <Field data-invalid={fieldState.invalid}>
+                  <FieldLabel htmlFor='cmbx-detail-response-dto'>Detail Response DTO</FieldLabel>
                   <Combobox
+                    id='cmbx-detail-response-dto'
                     items={dtos?.filter(f => f.crudTypeId == CrudTypeEnums.Read)}
                     value={dtos?.find(x => x.id === field.value)?.name ?? ''}
                     onValueChange={value => {
@@ -339,6 +365,18 @@ export default function DialogUpdateEntity({ ...props }: { entityId: number }) {
             />
           </FieldGroup>
         </form>
+
+        <DialogFooter>
+          <DialogClose asChild>
+            <Button type='button' variant='outline'>
+              Cancel
+            </Button>
+          </DialogClose>
+          <Button type='submit' form='form-update-entity' className='bg-emerald-600 hover:bg-emerald-700 text-white'>
+            <SaveIcon className='mr-1 mb-0.5 self-center' />
+              Save
+          </Button>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );
