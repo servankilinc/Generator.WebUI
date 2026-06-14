@@ -7,9 +7,10 @@ import type Entity from '@/models/entity/entity';
 import DialogUpdateEntity from './dialog-update-entity';
 import { Separator } from '@/components/ui/separator';
 import TableFields from './table-fields';
-import { ChevronDown, DiamondIcon } from 'lucide-react';
+import { ChevronDown, Diamond } from 'lucide-react';
 import { Link } from 'react-router';
 import { Button } from '@/components/ui/button';
+import DialogRelations from './dialog-relations';
 
 export default function CardEntity({ entity }: { entity: Entity }) {
   return (
@@ -24,10 +25,11 @@ export default function CardEntity({ entity }: { entity: Entity }) {
           </div>
           <div className='flex gap-2'>
             <Link to={`/dtos/${entity.id}`}>
-              <Button variant='outline' size='icon' className='rounded-full' title='View Dtos'>
-                <DiamondIcon />
+              <Button variant='ghost' className='bg-green-600' size='sm'>
+                <Diamond className='size-4 mr-2' /> Dtos
               </Button>
             </Link>
+            <DialogRelations entityId={entity.id} />
             <DialogUpdateEntity entityId={entity.id} />
           </div>
         </CardTitle>

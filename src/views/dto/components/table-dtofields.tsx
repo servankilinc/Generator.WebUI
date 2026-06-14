@@ -17,6 +17,7 @@ import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Combobox, ComboboxContent, ComboboxEmpty, ComboboxInput, ComboboxItem, ComboboxList } from '@/components/ui/combobox';
+import DialogValidations from './dialog-validations';
 
 type FormData = z.infer<typeof DtoFieldsUpdateSchema>;
 
@@ -52,10 +53,7 @@ export default function TableDtoFields(props: { dtoId: number; onUpdated?: () =>
     try {
       const response = await axiosHelper.get<DtoUpdateDto>('/dto/updateModel', { params: { dtoId: props.dtoId } });
       setRelatedEntityId(response?.relatedEntityId ?? 0);
-      if (response?.dtoFields != null) {
-        setDtoFieldsList(response.dtoFields);
-        return;
-      }
+
       await fetchDtoFields();
     } catch {
       toast.error('Dto Could not Readed!');
@@ -148,7 +146,6 @@ export default function TableDtoFields(props: { dtoId: number; onUpdated?: () =>
     if (entities.length === 0) {
       dispatch(fetchEntities());
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dispatch, entities.length, props.dtoId]);
 
   useEffect(() => {
@@ -400,9 +397,14 @@ export default function TableDtoFields(props: { dtoId: number; onUpdated?: () =>
                     ) : null}
                   </TableCell>
                   <TableCell className='text-right'>
-                    <Button type='button' variant='destructive' onClick={() => handleRemove(index)}>
-                      <TrashIcon color='red' />
-                    </Button>
+                    <div className='flex items-center justify-end gap-1'>
+                      {(watchedDtoFields?.[index]?.id ?? 0) > 0 && (
+                        <DialogValidations dtoFieldId={watchedDtoFields![index].id} />
+                      )}
+                      <Button type='button' variant='destructive' onClick={() => handleRemove(index)}>
+                        <TrashIcon color='red' />
+                      </Button>
+                    </div>
                   </TableCell>
                 </TableRow>
               );
