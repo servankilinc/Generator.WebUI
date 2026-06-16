@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { Link } from 'react-router';
-import { ChevronsUpDown, Command, Gamepad2, LifeBuoy, Monitor, Moon, Send, SunIcon } from 'lucide-react';
+import { ChevronsUpDown, Command, Gamepad2, Home, LifeBuoy, Monitor, Moon, Send, SunIcon } from 'lucide-react';
 import { useAppDispatch, useAppSelector } from '@/hooks';
 import { setTheme } from '@/redux/reducers/themeSlice';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
@@ -55,6 +55,16 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <SidebarGroup>
           <SidebarGroupLabel>Platform</SidebarGroupLabel>
           <SidebarMenu>
+
+            <SidebarMenuItem key={'Home'}>
+              <SidebarMenuButton asChild size='sm'>
+                <Link to='/'>
+                  <Home />
+                  <span>Home</span>
+                </Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+
             <SidebarMenuItem key={'Projects'}>
               <SidebarMenuButton asChild size='sm'>
                 <Link to='/projects'>
@@ -72,6 +82,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                 </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
+
           </SidebarMenu>
         </SidebarGroup>
       </SidebarContent>

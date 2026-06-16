@@ -65,20 +65,20 @@ export default function DialogUpdateDto({ dtoId, onUpdated }: { dtoId: number; o
   async function onSubmit(data: FormData) {
     try {
       await axiosHelper.put('/dto', data);
-      toast.success('Dto Updated Successfuly');
+      toast.success('DTO updated successfully');
       setIsOpen(false);
       form.reset();
       onUpdated?.();
     } catch {
-      toast.error('Dto Could not Bee Updated!');
+      toast.error('DTO could not be updated!');
     }
   }
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen} modal={false}>
       <DialogTrigger asChild>
-        <Button variant='ghost' className='bg-amber-600' size='sm'>
-          <Pen className='size-4 mr-2' /> Edit
+        <Button variant='outline' size='sm' className='gap-2'>
+          <Pen className='size-4' /> Edit
         </Button>
       </DialogTrigger>
       <DialogContent className='max-w-3xl'>
@@ -114,9 +114,7 @@ export default function DialogUpdateDto({ dtoId, onUpdated }: { dtoId: number; o
                     value={entities.find(x => x.id === field.value)?.name ?? ''}
                     onValueChange={value => {
                       const selected = entities.find(x => x.name === value);
-                      if (selected) {
-                        field.onChange(selected.id);
-                      }
+                      field.onChange(selected?.id ?? 0);
                     }}
                     aria-invalid={fieldState.invalid}>
                     <ComboboxInput placeholder='Select an entity' />
@@ -178,8 +176,8 @@ export default function DialogUpdateDto({ dtoId, onUpdated }: { dtoId: number; o
               Cancel
             </Button>
           </DialogClose>
-          <Button type='submit' form='form-update-dto' className='bg-emerald-600 hover:bg-emerald-700 text-white'>
-            <SaveIcon className='mr-1 mb-0.5 self-center' />
+          <Button type='submit' form='form-update-dto' className='gap-1'>
+            <SaveIcon className='size-4' />
             Save
           </Button>
         </DialogFooter>
