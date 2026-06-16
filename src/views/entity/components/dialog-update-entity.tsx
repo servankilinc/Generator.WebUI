@@ -36,7 +36,7 @@ export default function DialogUpdateEntity({ ...props }: { entityId: number }) {
 
   const fetchEntity = async () => {
     try {
-      let response = await axiosHelper.get<EntityUpdateDto>('/entity/updateModel', { params: { entityId: props.entityId } });
+      const response = await axiosHelper.get<EntityUpdateDto>('/entity/updateModel', { params: { entityId: props.entityId } });
       setEntity(response);
     } catch (error) {
       toast.error('Entity Could not Readed!');
@@ -45,7 +45,7 @@ export default function DialogUpdateEntity({ ...props }: { entityId: number }) {
 
   const fetchDtos = async () => {
     try {
-      let response = await axiosHelper.get<Dto[]>('/dto/list/byEntity', { params: { entityId: props.entityId } });
+      const response = await axiosHelper.get<Dto[]>('/dto/list/byEntity', { params: { entityId: props.entityId } });
       setDtos(response);
     } catch (error) {
       toast.error('Dtos Could not Readed!');

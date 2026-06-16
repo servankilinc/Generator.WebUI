@@ -189,7 +189,6 @@ export default function DialogValidations({ dtoFieldId }: { dtoFieldId: number }
               {fields.map((item, index) => {
                 const currentValidatorTypeId = watchedValidations?.[index]?.validatorTypeId ?? 0;
                 const params = validatorTypeParamsByIndex[index] ?? [];
-                const currentParams = watchedValidations?.[index]?.validationParams ?? [];
 
                 return (
                   <TableRow key={item.id} className='align-top'>

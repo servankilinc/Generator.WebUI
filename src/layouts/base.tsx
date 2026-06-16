@@ -20,9 +20,11 @@ export default function Layout() {
 
   const fetchActiveProject = async () => {
     try {
-      var response = await axiosHelper.get<Project>('/activeProject');
+      const response = await axiosHelper.get<Project>('/activeProject');
       if (response != null) dispatch(setActiveProject(response));
-    } catch (error) {}
+    } catch (error) {
+      console.error('Failed to fetch active project:', error);
+    }
   };
 
   return (

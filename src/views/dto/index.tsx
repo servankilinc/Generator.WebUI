@@ -8,7 +8,7 @@ import { toast } from 'sonner';
 import { useParams } from 'react-router';
 
 export default function Index() {
-  const [dtos, setDtos] = useState<DtoDetailResponseDto[]>([]);
+  const [dtos, setDtos] = useState<DtoDetailResponseDto[] | null>(null);
   const { entityId } = useParams();
 
   const fetchDtos = useCallback(async () => {

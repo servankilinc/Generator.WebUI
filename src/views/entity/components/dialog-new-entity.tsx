@@ -8,7 +8,6 @@ import { Controller, useFieldArray, useForm } from 'react-hook-form';
 import { PlusCircleIcon, TrashIcon } from 'lucide-react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import type FieldType from '@/models/fieldType/fieldType';
-import type FieldCreateDto from '@/models/field/fieldCreateDto';
 import type EntityCreateDto from '@/models/entity/entityCreateDto';
 import { EntityCreateSchema } from '@/models/entity/entityCreateDto';
 import { Input } from '@/components/ui/input';
@@ -43,7 +42,7 @@ export default function DialogNewEntity() {
 
   const fetchBaseFieldTypes = async () => {
     try {
-      let response = await axiosHelper.get<FieldType[]>('/fieldType/list/onbasetype');
+      const response = await axiosHelper.get<FieldType[]>('/fieldType/list/onbasetype');
       setFieldTypes(response ?? []);
     } catch (error) {
       toast.error('Field Types Could not Readed!');
@@ -58,6 +57,7 @@ export default function DialogNewEntity() {
     archivable: false,
     fields: [
       {
+        entityId: 0,
         fieldTypeId: 1,
         name: 'Field',
         isRequired: true,
@@ -65,7 +65,7 @@ export default function DialogNewEntity() {
         isList: false,
         filterable: false
       }
-    ] as FieldCreateDto[]
+    ]
   };
 
   const form = useForm<FormData>({
@@ -80,7 +80,7 @@ export default function DialogNewEntity() {
 
   async function onSubmit(data: FormData) {
     try {
-      await axiosHelper.post('entity', data);
+      await axiosHelper.post('/entity', data);
       toast.success('Entity Created Successfuly');
       setIsOpen(false);
       form.reset();
@@ -182,6 +182,7 @@ export default function DialogNewEntity() {
                 variant='outline'
                 onClick={() =>
                   append({
+                    entityId: 0,
                     fieldTypeId: 1,
                     name: '',
                     isRequired: false,

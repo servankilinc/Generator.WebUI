@@ -21,7 +21,7 @@ import {
   ComboboxList,
 } from '@/components/ui/combobox';
 import { Textarea } from '@/components/ui/textarea';
-import { FolderOpen, Save, RotateCcw, Settings, Database, User, Shield, FolderIcon } from 'lucide-react';
+import { FolderOpen, Save, Settings, Database, User, Shield, FolderIcon } from 'lucide-react';
 import { fetchEntities } from '@/redux/reducers/entitySlice';
 
 type FormData = z.infer<typeof AppSettingUpdateSchema>;

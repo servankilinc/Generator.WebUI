@@ -28,7 +28,7 @@ export default function TableFields(props: { entityId: number }) {
 
   const fetchFields = async () => {
     try {
-      let response = await axiosHelper.get<FieldUpdateDto[]>('/field/list/updateModel', { params: { entityId: props.entityId } });
+      const response = await axiosHelper.get<FieldUpdateDto[]>('/field/list/updateModel', { params: { entityId: props.entityId } });
       setFieldsList(response ?? []);
     } catch (error) {
       toast.error('Fields Could not Readed!');
@@ -37,7 +37,7 @@ export default function TableFields(props: { entityId: number }) {
 
   const fetchBaseFieldTypes = async () => {
     try {
-      let response = await axiosHelper.get<FieldType[]>('/fieldType/list/onbasetype', { params: { entityId: props.entityId } });
+      const response = await axiosHelper.get<FieldType[]>('/fieldType/list/onbasetype', { params: { entityId: props.entityId } });
       setFieldTypes(response ?? []);
     } catch (error) {
       toast.error('Field Types Could not Readed!');

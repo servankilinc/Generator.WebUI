@@ -7,12 +7,28 @@ import type Entity from '@/models/entity/entity';
 import DialogUpdateEntity from './dialog-update-entity';
 import { Separator } from '@/components/ui/separator';
 import TableFields from './table-fields';
-import { ChevronDown, Diamond } from 'lucide-react';
+import { ChevronDown, Diamond, TrashIcon } from 'lucide-react';
 import { Link } from 'react-router';
 import { Button } from '@/components/ui/button';
 import DialogRelations from './dialog-relations';
+import { useAppDispatch } from '@/hooks';
+import { fetchEntities } from '@/redux/reducers/entitySlice';
+import axiosHelper from '@/lib/axios-helper';
+import { toast } from 'sonner';
 
 export default function CardEntity({ entity }: { entity: Entity }) {
+  const dispatch = useAppDispatch();
+
+  const deleteEntity = async () => {
+    try {
+      await axiosHelper.delete('/entity', undefined, { params: { id: entity.id } });
+      toast.success('Entity Deleted Successfully');
+      dispatch(fetchEntities());
+    } catch (error) {
+      toast.error('Entity Could not Be Deleted!');
+    }
+  };
+
   return (
     <Card size='sm' className='mx-auto w-full h-min'>
       <CardHeader>
@@ -30,6 +46,9 @@ export default function CardEntity({ entity }: { entity: Entity }) {
               </Button>
             </Link>
             <DialogRelations entityId={entity.id} />
+            <Button variant='destructive' size='icon-sm' onClick={() => deleteEntity()}>
+              <TrashIcon className='size-4' />
+            </Button>
             <DialogUpdateEntity entityId={entity.id} />
           </div>
         </CardTitle>
