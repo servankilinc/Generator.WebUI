@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { BadgeDanger, BadgeInfo, BadgeSuccess } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -15,16 +16,18 @@ import { useAppDispatch } from '@/hooks';
 import { fetchEntities } from '@/redux/reducers/entitySlice';
 import axiosHelper from '@/lib/axios-helper';
 import { toast } from 'sonner';
+import ConfirmDialog from '@/components/global/confirm-dialog';
 
 export default function CardEntity({ entity }: { entity: Entity }) {
   const dispatch = useAppDispatch();
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   const deleteEntity = async () => {
     try {
       await axiosHelper.delete('/entity', undefined, { params: { id: entity.id } });
       toast.success('Entity Deleted Successfully');
       dispatch(fetchEntities());
-    } catch (error) {
+    } catch {
       toast.error('Entity Could not Be Deleted!');
     }
   };
@@ -46,13 +49,21 @@ export default function CardEntity({ entity }: { entity: Entity }) {
               </Button>
             </Link>
             <DialogRelations entityId={entity.id} />
-            <Button variant='destructive' size='icon-sm' onClick={() => deleteEntity()}>
+            <Button variant='destructive' size='icon-sm' onClick={() => setShowDeleteConfirm(true)}>
               <TrashIcon className='size-4' />
             </Button>
             <DialogUpdateEntity entityId={entity.id} />
           </div>
         </CardTitle>
       </CardHeader>
+      <ConfirmDialog
+        open={showDeleteConfirm}
+        onOpenChange={setShowDeleteConfirm}
+        title={`Delete entity "${entity.name}"?`}
+        description='This will permanently delete this entity and all its fields. This action cannot be undone.'
+        confirmLabel='Delete'
+        onConfirm={deleteEntity}
+      />
       <CardContent>
         <div className='flex flex-col gap-2'>
           <Separator />

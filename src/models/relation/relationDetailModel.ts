@@ -1,5 +1,9 @@
 export default interface RelationDetailModel {
   id: number;
+  primaryEntityId: number;
+  primaryEntityName: string | null;
+  foreignEntityId: number;
+  foreignEntityName: string | null;
   primaryFieldId: number;
   primaryFieldName: string | null;
   foreignFieldId: number;

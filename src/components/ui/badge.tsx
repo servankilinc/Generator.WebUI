@@ -103,4 +103,12 @@ function BadgeInfo({
     />
   );
 }
-export { Badge, badgeVariants, BadgeSuccess, BadgeDanger, BadgePrimary, BadgeInfo };
+export {
+  Badge,
+  // eslint-disable-next-line react-refresh/only-export-components
+  badgeVariants,
+  BadgeSuccess,
+  BadgeDanger,
+  BadgePrimary,
+  BadgeInfo
+};

@@ -45,7 +45,7 @@ export default function DialogNewProject() {
       setIsOpen(false);
       form.reset();
       dispatch(fetchProjects());
-    } catch (error) {
+    } catch {
       toast.error('Project Could not Bee Created!');
     }
   }

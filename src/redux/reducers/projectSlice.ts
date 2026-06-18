@@ -48,7 +48,7 @@ export const fetchProjects = createAsyncThunk('fetchProjects', async () => {
   try {
     const response = await axiosHelper.get<Project[]>('/project/list');
     return response;
-  } catch (error) {
+  } catch {
     toast.error('Projects Could not Readed!');
   }
 });

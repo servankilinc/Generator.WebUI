@@ -1,22 +1,22 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type ReactNode, type ChangeEvent } from 'react';
 import { z } from 'zod';
 import { toast } from 'sonner';
 import axiosHelper from '@/lib/axios-helper';
 import { fetchEntities } from '@/redux/reducers/entitySlice';
 import { useAppDispatch, useAppSelector } from '@/hooks';
-import { Controller, useFieldArray, useForm, useWatch } from 'react-hook-form';
+import { useFieldArray, useForm, useWatch } from 'react-hook-form';
 import { PlusCircleIcon, TrashIcon } from 'lucide-react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import type CrudType from '@/models/crudType/crudType';
 import { DtoCreateSchema } from '@/models/dto/dtoCreateDto';
 import type RelationVisualModel from '@/models/dtoFieldRelations/relationVisualModel';
-import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
 import { Separator } from '@/components/ui/separator';
-import { Field, FieldError, FieldGroup, FieldLabel } from '@/components/ui/field';
+import { FieldGroup } from '@/components/ui/field';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Combobox, ComboboxContent, ComboboxEmpty, ComboboxInput, ComboboxItem, ComboboxList } from '@/components/ui/combobox';
+import FormInput from '@/components/global/form-input';
+import FormCheckbox from '@/components/global/form-checkbox';
+import FormCombobox from '@/components/global/form-combobox';
 import {
   Dialog,
   DialogClose,
@@ -33,7 +33,7 @@ type DtoFieldRowState = {
   relationOptions: RelationVisualModel[];
 };
 
-export default function DialogNewDto(props: { entityId: number; onCreated?: () => void }) {
+export default function DialogNewDto(props: { entityId: number; onCreated?: () => void; trigger?: ReactNode }) {
   const dispatch = useAppDispatch();
 
   const [isOpen, setIsOpen] = useState(false);
@@ -154,9 +154,11 @@ export default function DialogNewDto(props: { entityId: number; onCreated?: () =
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen} modal={false}>
       <DialogTrigger asChild>
-        <Button variant='destructive' className='w-min m-3'>
-          <PlusCircleIcon className='mx-2' /> New DTO
-        </Button>
+        {props.trigger ?? (
+          <Button variant='destructive' className='w-min m-3'>
+            <PlusCircleIcon className='mx-2' /> New DTO
+          </Button>
+        )}
       </DialogTrigger>
       <DialogContent className='max-w-4xl'>
         <DialogHeader>
@@ -165,51 +167,8 @@ export default function DialogNewDto(props: { entityId: number; onCreated?: () =
         </DialogHeader>
         <form id='form-create-dto' onSubmit={form.handleSubmit(onSubmit)} className='space-y-6'>
           <FieldGroup>
-            <Controller
-              name='name'
-              control={form.control}
-              render={({ field, fieldState }) => (
-                <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor='txt-dto-name'>Name</FieldLabel>
-                  <Input {...field} id='txt-dto-name' aria-invalid={fieldState.invalid} placeholder='name' autoComplete='off' />
-                  {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
-                </Field>
-              )}
-            />
-
-            <Controller
-              name='crudTypeId'
-              control={form.control}
-              render={({ field, fieldState }) => (
-                <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor='cmbx-crud-type'>CRUD Type</FieldLabel>
-                  <Combobox
-                    id='cmbx-crud-type'
-                    items={crudTypes}
-                    value={crudTypes.find(x => x.id === field.value)?.name ?? ''}
-                    onValueChange={value => {
-                      const selected = crudTypes.find(x => x.name === value);
-                      if (selected) {
-                        field.onChange(selected.id);
-                      }
-                    }}
-                    aria-invalid={fieldState.invalid}>
-                    <ComboboxInput placeholder='Select a CRUD type' />
-                    <ComboboxContent>
-                      <ComboboxEmpty>No items found.</ComboboxEmpty>
-                      <ComboboxList>
-                        {item => (
-                          <ComboboxItem key={item.id} value={item.name}>
-                            {item.name}
-                          </ComboboxItem>
-                        )}
-                      </ComboboxList>
-                    </ComboboxContent>
-                  </Combobox>
-                  {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
-                </Field>
-              )}
-            />
+            <FormInput name='name' control={form.control} label='Name' id='txt-dto-name' placeholder='name' autoComplete='off' />
+            <FormCombobox name='crudTypeId' control={form.control} label='CRUD Type' id='cmbx-crud-type' items={crudTypes} placeholder='Select a CRUD type' />
           </FieldGroup>
 
           <Separator />
@@ -261,170 +220,68 @@ export default function DialogNewDto(props: { entityId: number; onCreated?: () =
                       return (
                         <>
                           <TableCell className='font-medium'>
-                            <Controller
+                            <FormCombobox
                               name={`dtoFields.${index}.sourceEntityId`}
                               control={form.control}
-                              render={({ field, fieldState }) => (
-                                <Field data-invalid={fieldState.invalid}>
-                                  <Combobox
-                                    items={entities}
-                                    value={entities.find(x => x.id === field.value)?.name ?? ''}
-                                    onValueChange={value => {
-                                      const selected = entities.find(x => x.name === value);
-                                      const selectedEntityId = selected?.id ?? 0;
-                                      field.onChange(selectedEntityId);
-                                      form.setValue(`dtoFields.${index}.sourceFieldId`, 0, { shouldValidate: true });
-                                      form.setValue(`dtoFields.${index}.name`, '', { shouldValidate: true });
-                                      form.setValue(`dtoFields.${index}.isRequired`, false);
-                                      form.setValue(`dtoFields.${index}.isList`, false);
-                                      syncDtoFieldRelations(item.id, index, selectedEntityId, props.entityId);
-                                    }}
-                                    aria-invalid={fieldState.invalid}>
-                                    <ComboboxInput placeholder='Select an entity' />
-                                    <ComboboxContent>
-                                      <ComboboxEmpty>No items found.</ComboboxEmpty>
-                                      <ComboboxList>
-                                        {entity => (
-                                          <ComboboxItem key={entity.id} value={entity.name}>
-                                            {entity.name}
-                                          </ComboboxItem>
-                                        )}
-                                      </ComboboxList>
-                                    </ComboboxContent>
-                                  </Combobox>
-                                  {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
-                                </Field>
-                              )}
+                              items={entities}
+                              placeholder='Select an entity'
+                              onValueChange={selectedEntityId => {
+                                form.setValue(`dtoFields.${index}.sourceFieldId`, 0, { shouldValidate: true });
+                                form.setValue(`dtoFields.${index}.name`, '', { shouldValidate: true });
+                                form.setValue(`dtoFields.${index}.isRequired`, false);
+                                form.setValue(`dtoFields.${index}.isList`, false);
+                                syncDtoFieldRelations(item.id, index, selectedEntityId ?? 0, props.entityId);
+                              }}
                             />
                           </TableCell>
                           <TableCell className='font-medium'>
-                            <Controller
+                            <FormCombobox
                               name={`dtoFields.${index}.sourceFieldId`}
                               control={form.control}
-                              render={({ field, fieldState }) => (
-                                <Field data-invalid={fieldState.invalid}>
-                                  <Combobox
-                                    items={sourceEntityFields}
-                                    value={sourceEntityFields.find(x => x.id === field.value)?.name ?? ''}
-                                    onValueChange={value => {
-                                      const selected = sourceEntityFields.find(x => x.name === value);
-                                      if (selected) {
-                                        field.onChange(selected.id);
-                                        form.setValue(`dtoFields.${index}.name`, selected.name, { shouldValidate: true });
-                                        form.setValue(`dtoFields.${index}.isRequired`, selected.isRequired);
-                                        form.setValue(`dtoFields.${index}.isList`, selected.isList);
-                                      }
-                                    }}
-                                    aria-invalid={fieldState.invalid}>
-                                    <ComboboxInput disabled={sourceEntityId === 0} placeholder='Select a source field' />
-                                    <ComboboxContent>
-                                      <ComboboxEmpty>No items found.</ComboboxEmpty>
-                                      <ComboboxList>
-                                        {item => (
-                                          <ComboboxItem key={item.id} value={item.name}>
-                                            {item.name}
-                                          </ComboboxItem>
-                                        )}
-                                      </ComboboxList>
-                                    </ComboboxContent>
-                                  </Combobox>
-                                  {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
-                                </Field>
-                              )}
+                              items={sourceEntityFields}
+                              disabled={sourceEntityId === 0}
+                              placeholder='Select a source field'
+                              onValueChange={selectedFieldId => {
+                                const selected = sourceEntityFields.find(x => x.id === selectedFieldId);
+                                if (selected) {
+                                  form.setValue(`dtoFields.${index}.name`, selected.name, { shouldValidate: true });
+                                  form.setValue(`dtoFields.${index}.isRequired`, selected.isRequired);
+                                  form.setValue(`dtoFields.${index}.isList`, selected.isList);
+                                }
+                              }}
                             />
                           </TableCell>
 
                           <TableCell className='font-medium'>
-                            <Controller
-                              name={`dtoFields.${index}.name`}
-                              control={form.control}
-                              render={({ field, fieldState }) => (
-                                <Field data-invalid={fieldState.invalid}>
-                                  <Input {...field} aria-invalid={fieldState.invalid} placeholder='dto field name' autoComplete='off' />
-                                  {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
-                                </Field>
-                              )}
-                            />
+                            <FormInput name={`dtoFields.${index}.name`} control={form.control} placeholder='dto field name' autoComplete='off' />
                           </TableCell>
 
                           <TableCell>
-                            <Controller
-                              name={`dtoFields.${index}.isRequired`}
-                              control={form.control}
-                              render={({ field, fieldState }) => (
-                                <Field data-invalid={fieldState.invalid} orientation='horizontal' className='justify-center'>
-                                  <Checkbox checked={field.value} onCheckedChange={field.onChange} aria-invalid={fieldState.invalid} />
-                                  {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
-                                </Field>
-                              )}
-                            />
+                            <FormCheckbox name={`dtoFields.${index}.isRequired`} control={form.control} className='justify-center' />
                           </TableCell>
 
                           <TableCell className='font-medium'>
-                            <Controller
-                              name={`dtoFields.${index}.isList`}
-                              control={form.control}
-                              render={({ field, fieldState }) => (
-                                <Field data-invalid={fieldState.invalid} orientation='horizontal' className='justify-center'>
-                                  <Checkbox checked={field.value} onCheckedChange={field.onChange} aria-invalid={fieldState.invalid} />
-                                  {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
-                                </Field>
-                              )}
-                            />
+                            <FormCheckbox name={`dtoFields.${index}.isList`} control={form.control} className='justify-center' />
                           </TableCell>
                           
                           <TableCell className='font-medium'>
                             {hasRelation ? (
-                              <Controller
+                              <FormCombobox
                                 name={`dtoFields.${index}.dtoFieldRelations.0.relationId`}
                                 control={form.control}
-                                render={({ field, fieldState }) => (
-                                  <Field data-invalid={fieldState.invalid}>
-                                    <Combobox
-                                      items={relationOptions}
-                                      value={relationOptions.find(x => x.id === field.value)?.name ?? ''}
-                                      onValueChange={value => {
-                                        const selected = relationOptions.find(x => x.name === value);
-                                        if (selected) {
-                                          field.onChange(selected.id);
-                                        }
-                                      }}
-                                      aria-invalid={fieldState.invalid}>
-                                      <ComboboxInput placeholder='Select relation' />
-                                      <ComboboxContent>
-                                        <ComboboxEmpty>No items found.</ComboboxEmpty>
-                                        <ComboboxList>
-                                          {relation => (
-                                            <ComboboxItem key={relation.id} value={relation.name}>
-                                              {relation.name}
-                                            </ComboboxItem>
-                                          )}
-                                        </ComboboxList>
-                                      </ComboboxContent>
-                                    </Combobox>
-                                    {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
-                                  </Field>
-                                )}
+                                items={relationOptions}
+                                placeholder='Select relation'
                               />
                             ) : null}
                           </TableCell>
                           <TableCell className='font-medium'>
                             {hasRelation ? (
-                              <Controller
+                              <FormInput
                                 name={`dtoFields.${index}.dtoFieldRelations.0.sequenceNo`}
                                 control={form.control}
-                                render={({ field, fieldState }) => (
-                                  <Field data-invalid={fieldState.invalid}>
-                                    <Input
-                                      {...field}
-                                      type='number'
-                                      min={1}
-                                      aria-invalid={fieldState.invalid}
-                                      onChange={event => field.onChange(Number(event.target.value))}
-                                    />
-                                    {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
-                                  </Field>
-                                )}
+                                type='number'
+                                min={1}
+                                onChange={(event: ChangeEvent<HTMLInputElement>) => form.setValue(`dtoFields.${index}.dtoFieldRelations.0.sequenceNo`, Number(event.target.value))}
                               />
                             ) : null}
                           </TableCell>

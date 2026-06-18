@@ -128,3 +128,36 @@
     @apply font-sans;
     }
 }
+
+/* React Flow dark mode overrides */
+.dark .react-flow__controls {
+  background: oklch(0.205 0 0);
+  border-color: oklch(1 0 0 / 10%);
+}
+
+.dark .react-flow__controls button {
+  background: oklch(0.205 0 0);
+  border-color: oklch(1 0 0 / 10%);
+  fill: oklch(0.985 0 0);
+  color: oklch(0.985 0 0);
+}
+
+.dark .react-flow__controls button:hover {
+  background: oklch(0.269 0 0);
+}
+
+.dark .react-flow__controls button svg {
+  fill: oklch(0.985 0 0);
+}
+
+.dark .react-flow__minimap {
+  background: oklch(0.205 0 0);
+}
+
+.dark .react-flow__attribution {
+  background: oklch(0.205 0 0 / 50%);
+}
+
+.dark .react-flow__attribution a {
+  color: oklch(0.708 0 0);
+}

@@ -5,17 +5,17 @@ import axiosHelper from '@/lib/axios-helper';
 import { Pen, SaveIcon } from 'lucide-react';
 import { useAppDispatch, useAppSelector } from '@/hooks';
 import { fetchEntities } from '@/redux/reducers/entitySlice';
-import { Controller, useForm } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import type CrudType from '@/models/crudType/crudType';
 import type DtoUpdateDto from '@/models/dto/dtoUpdateDto';
 import { DtoUpdateSchema } from '@/models/dto/dtoUpdateDto';
-import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogClose, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Field, FieldError, FieldGroup, FieldLabel } from '@/components/ui/field';
-import { Combobox, ComboboxContent, ComboboxEmpty, ComboboxInput, ComboboxItem, ComboboxList } from '@/components/ui/combobox';
+import { FieldGroup } from '@/components/ui/field';
 import { Separator } from '@/components/ui/separator';
+import FormInput from '@/components/global/form-input';
+import FormCombobox from '@/components/global/form-combobox';
 
 type FormData = z.infer<typeof DtoUpdateSchema>;
 
@@ -90,83 +90,9 @@ export default function DialogUpdateDto({ dtoId, onUpdated }: { dtoId: number; o
 
         <form id='form-update-dto' onSubmit={form.handleSubmit(onSubmit)} className='space-y-6'>
           <FieldGroup>
-            <Controller
-              name='name'
-              control={form.control}
-              render={({ field, fieldState }) => (
-                <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor='txt-dto-name'>Name</FieldLabel>
-                  <Input {...field} id='txt-dto-name' aria-invalid={fieldState.invalid} placeholder='name' autoComplete='off' />
-                  {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
-                </Field>
-              )}
-            />
-
-            <Controller
-              name='relatedEntityId'
-              control={form.control}
-              render={({ field, fieldState }) => (
-                <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor='cmbx-related-entity'>Related Entity</FieldLabel>
-                  <Combobox
-                    id='cmbx-related-entity'
-                    items={entities}
-                    value={entities.find(x => x.id === field.value)?.name ?? ''}
-                    onValueChange={value => {
-                      const selected = entities.find(x => x.name === value);
-                      field.onChange(selected?.id ?? 0);
-                    }}
-                    aria-invalid={fieldState.invalid}>
-                    <ComboboxInput placeholder='Select an entity' />
-                    <ComboboxContent>
-                      <ComboboxEmpty>No items found.</ComboboxEmpty>
-                      <ComboboxList>
-                        {item => (
-                          <ComboboxItem key={item.id} value={item.name}>
-                            {item.name}
-                          </ComboboxItem>
-                        )}
-                      </ComboboxList>
-                    </ComboboxContent>
-                  </Combobox>
-                  {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
-                </Field>
-              )}
-            />
-
-            <Controller
-              name='crudTypeId'
-              control={form.control}
-              render={({ field, fieldState }) => (
-                <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor='cmbx-crud-type'>CRUD Type</FieldLabel>
-                  <Combobox
-                    id='cmbx-crud-type'
-                    items={crudTypes}
-                    value={crudTypes.find(x => x.id === field.value)?.name ?? ''}
-                    onValueChange={value => {
-                      const selected = crudTypes.find(x => x.name === value);
-                      if (selected) {
-                        field.onChange(selected.id);
-                      }
-                    }}
-                    aria-invalid={fieldState.invalid}>
-                    <ComboboxInput placeholder='Select a CRUD type' />
-                    <ComboboxContent>
-                      <ComboboxEmpty>No items found.</ComboboxEmpty>
-                      <ComboboxList>
-                        {item => (
-                          <ComboboxItem key={item.id} value={item.name}>
-                            {item.name}
-                          </ComboboxItem>
-                        )}
-                      </ComboboxList>
-                    </ComboboxContent>
-                  </Combobox>
-                  {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
-                </Field>
-              )}
-            />
+            <FormInput name='name' control={form.control} label='Name' id='txt-dto-name' placeholder='name' autoComplete='off' />
+            <FormCombobox name='relatedEntityId' control={form.control} label='Related Entity' id='cmbx-related-entity' items={entities} placeholder='Select an entity' />
+            <FormCombobox name='crudTypeId' control={form.control} label='CRUD Type' id='cmbx-crud-type' items={crudTypes} placeholder='Select a CRUD type' />
           </FieldGroup>
         </form>
 

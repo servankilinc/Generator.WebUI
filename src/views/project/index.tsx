@@ -13,7 +13,7 @@ export default function Projects() {
 
   useEffect(() => {
     dispatch(fetchProjects());
-  }, []);
+  }, [dispatch]);
 
   if (isLoading) {
     return <BaseSkeleton />;

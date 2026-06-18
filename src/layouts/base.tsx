@@ -5,7 +5,7 @@ import AppBreadcrumb from '@/components/global/app-breadcrumb';
 import { ThemeProvider } from '@/components/global/theme-provider';
 import { Outlet } from 'react-router';
 import { Toaster } from '@/components/ui/sonner';
-import { useEffect } from 'react';
+import { useCallback, useEffect } from 'react';
 import { useAppDispatch } from '@/hooks';
 import axiosHelper from '@/lib/axios-helper';
 import type Project from '@/models/project/project';
@@ -14,18 +14,18 @@ import { setActiveProject } from '@/redux/reducers/projectSlice';
 export default function Layout() {
   const dispatch = useAppDispatch();
   
-  useEffect(() => {
-    fetchActiveProject();
-  }, []);
-
-  const fetchActiveProject = async () => {
+  const fetchActiveProject = useCallback(async () => {
     try {
       const response = await axiosHelper.get<Project>('/activeProject');
       if (response != null) dispatch(setActiveProject(response));
     } catch (error) {
       console.error('Failed to fetch active project:', error);
     }
-  };
+  }, [dispatch]);
+
+  useEffect(() => {
+    fetchActiveProject();
+  }, [fetchActiveProject]);
 
   return (
     <ThemeProvider>

@@ -40,17 +40,17 @@ class AxiosService {
     return response.data;
   }
 
-  async post<TResponse = undefined>(url: string, data?: any, config?: AxiosRequestConfig | undefined): Promise<TResponse | undefined> {
+  async post<TResponse = undefined>(url: string, data?: unknown, config?: AxiosRequestConfig | undefined): Promise<TResponse | undefined> {
     const response = await this._axios.post<TResponse>(url, data, config);
     return response.data;
   }
 
-  async put<TResponse = undefined>(url: string, data?: any, config?: AxiosRequestConfig | undefined): Promise<TResponse | undefined> {
+  async put<TResponse = undefined>(url: string, data?: unknown, config?: AxiosRequestConfig | undefined): Promise<TResponse | undefined> {
     const response = await this._axios.put<TResponse>(url, data, config);
     return response.data;
   }
 
-  async delete<TResponse = undefined>(url: string, data?: any, config?: AxiosRequestConfig | undefined): Promise<TResponse | undefined> {
+  async delete<TResponse = undefined>(url: string, data?: unknown, config?: AxiosRequestConfig | undefined): Promise<TResponse | undefined> {
     const response = await this._axios.delete<TResponse>(url, {
       data: data,
       ...config

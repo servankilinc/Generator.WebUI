@@ -37,7 +37,7 @@ export const fetchEntities = createAsyncThunk('fetchEntities', async () => {
   try {
     const response = await axiosHelper.get<Entity[]>('/entity/list/withBaseFields');
     return response;
-  } catch (error) {
+  } catch {
     toast.error('Entities Could not Readed!');
   }
 });

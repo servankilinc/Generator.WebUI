@@ -12,7 +12,7 @@ export default function Entities() {
 
   useEffect(() => {
     dispatch(fetchEntities());
-  }, []);
+  }, [dispatch]);
 
   if (isLoading) {
     return <BaseSkeleton />;

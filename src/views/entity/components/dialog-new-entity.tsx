@@ -1,22 +1,23 @@
-import { useEffect, useState } from 'react';
+import type { ReactNode } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { z } from 'zod';
 import { toast } from 'sonner';
 import axiosHelper from '@/lib/axios-helper';
 import { fetchEntities } from '@/redux/reducers/entitySlice';
 import { useAppDispatch } from '@/hooks';
-import { Controller, useFieldArray, useForm } from 'react-hook-form';
+import { useFieldArray, useForm } from 'react-hook-form';
 import { PlusCircleIcon, TrashIcon } from 'lucide-react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import type FieldType from '@/models/fieldType/fieldType';
 import type EntityCreateDto from '@/models/entity/entityCreateDto';
 import { EntityCreateSchema } from '@/models/entity/entityCreateDto';
-import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
 import { Separator } from '@/components/ui/separator';
-import { Field, FieldError, FieldGroup, FieldLabel } from '@/components/ui/field';
+import { FieldGroup } from '@/components/ui/field';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Combobox, ComboboxContent, ComboboxEmpty, ComboboxInput, ComboboxItem, ComboboxList } from '@/components/ui/combobox';
+import FormInput from '@/components/global/form-input';
+import FormCheckbox from '@/components/global/form-checkbox';
+import FormCombobox from '@/components/global/form-combobox';
 import {
   Dialog,
   DialogClose,
@@ -30,24 +31,25 @@ import {
 
 type FormData = z.infer<typeof EntityCreateSchema>;
 
-export default function DialogNewEntity() {
+export default function DialogNewEntity({ trigger }: { trigger?: ReactNode } = {}) {
   const dispatch = useAppDispatch();
 
   const [isOpen, setIsOpen] = useState(false);
   const [fieldTypes, setFieldTypes] = useState<FieldType[]>([]);
 
-  useEffect(() => {
-    fetchBaseFieldTypes();
-  }, []);
-
-  const fetchBaseFieldTypes = async () => {
+  const fetchBaseFieldTypes = useCallback(async () => {
     try {
       const response = await axiosHelper.get<FieldType[]>('/fieldType/list/onbasetype');
       setFieldTypes(response ?? []);
-    } catch (error) {
+    } catch {
       toast.error('Field Types Could not Readed!');
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    fetchBaseFieldTypes();
+  }, [fetchBaseFieldTypes]);
 
   const createModel: EntityCreateDto = {
     name: '',
@@ -85,7 +87,7 @@ export default function DialogNewEntity() {
       setIsOpen(false);
       form.reset();
       dispatch(fetchEntities());
-    } catch (error) {
+    } catch {
       toast.error('Entity Could not Bee Created!');
     }
   }
@@ -93,9 +95,11 @@ export default function DialogNewEntity() {
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen} modal={false}>
       <DialogTrigger asChild>
-        <Button variant='destructive' className='w-min m-3'>
-          <PlusCircleIcon className='mx-2' /> New Entity
-        </Button>
+        {trigger ?? (
+          <Button variant='destructive' className='w-min m-3'>
+            <PlusCircleIcon className='mx-2' /> New Entity
+          </Button>
+        )}
       </DialogTrigger>
       <DialogContent className='max-w-3xl'>
         <DialogHeader>
@@ -104,72 +108,11 @@ export default function DialogNewEntity() {
         </DialogHeader>
         <form id='form-create-entity' onSubmit={form.handleSubmit(onSubmit)} className='space-y-6'>
           <FieldGroup>
-            {/* Entity Name */}
-            <Controller
-              name='name'
-              control={form.control}
-              render={({ field, fieldState }) => (
-                <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor='txt-entity-name'>Name</FieldLabel>
-                  <Input {...field} id='txt-entity-name' aria-invalid={fieldState.invalid} placeholder='name' autoComplete='off' />
-                  {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
-                </Field>
-              )}
-            />
-            {/* Table Name */}
-            <Controller
-              name='tableName'
-              control={form.control}
-              render={({ field, fieldState }) => (
-                <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor='txt-table-name'>Table Name</FieldLabel>
-                  <Input {...field} id='txt-table-name' aria-invalid={fieldState.invalid} placeholder='table name' autoComplete='off' />
-                  {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
-                </Field>
-              )}
-            />
-            {/* Auditable */}
-            <Controller
-              name='auditable'
-              control={form.control}
-              render={({ field, fieldState }) => (
-                <Field data-invalid={fieldState.invalid} orientation='horizontal'>
-                  <Checkbox id='chbx-auditable' checked={field.value} onCheckedChange={field.onChange} aria-invalid={fieldState.invalid} />
-                  <FieldLabel htmlFor='chbx-auditable' className='font-normal'>
-                    Auditable
-                  </FieldLabel>
-                  {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
-                </Field>
-              )}
-            />
-            {/* Archivable */}
-            <Controller
-              name='archivable'
-              control={form.control}
-              render={({ field, fieldState }) => (
-                <Field data-invalid={fieldState.invalid} orientation='horizontal'>
-                  <Checkbox id='chbx-archivable' checked={field.value} onCheckedChange={field.onChange} aria-invalid={fieldState.invalid} />
-                  <FieldLabel htmlFor='chbx-archivable' className='font-normal'>
-                    Archivable
-                  </FieldLabel>
-                  {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
-                </Field>
-              )}
-            />
-            {/* Soft Deletable */}
-            <Controller
-              name='softDeletable'
-              control={form.control}
-              render={({ field, fieldState }) => (
-                <Field data-invalid={fieldState.invalid} orientation='horizontal'>
-                  <Checkbox id='chbx-softdeletable' checked={field.value} onCheckedChange={field.onChange} aria-invalid={fieldState.invalid} />
-                  <FieldLabel htmlFor='chbx-softdeletable' className='font-normal'>
-                    Soft Deletable
-                  </FieldLabel>
-                  {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
-                </Field>
-              )}
-            />
+            <FormInput name='name' control={form.control} label='Name' id='txt-entity-name' placeholder='name' autoComplete='off' />
+            <FormInput name='tableName' control={form.control} label='Table Name' id='txt-table-name' placeholder='table name' autoComplete='off' />
+            <FormCheckbox name='auditable' control={form.control} label='Auditable' id='chbx-auditable' />
+            <FormCheckbox name='archivable' control={form.control} label='Archivable' id='chbx-archivable' />
+            <FormCheckbox name='softDeletable' control={form.control} label='Soft Deletable' id='chbx-softdeletable' />
           </FieldGroup>
 
           <Separator />
@@ -212,103 +155,22 @@ export default function DialogNewEntity() {
                 {fields.map((item, index) => (
                   <TableRow key={item.id}>
                     <TableCell className='font-medium'>
-                      {/* Field Name */}
-                      <Controller
-                        name={`fields.${index}.name`}
-                        control={form.control}
-                        render={({ field, fieldState }) => (
-                          <Field data-invalid={fieldState.invalid}>
-                            <Input {...field} aria-invalid={fieldState.invalid} placeholder='field name' autoComplete='off' />
-                            {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
-                          </Field>
-                        )}
-                      />
+                      <FormInput name={`fields.${index}.name`} control={form.control} placeholder='field name' autoComplete='off' />
                     </TableCell>
                     <TableCell className='font-medium'>
-                      {/* Field Type */}
-                      <Controller
-                        name={`fields.${index}.fieldTypeId`}
-                        control={form.control}
-                        render={({ field, fieldState }) => (
-                          <Field data-invalid={fieldState.invalid}>
-                            <Combobox
-                              items={fieldTypes}
-                              value={fieldTypes.find(x => x.id === field.value)?.name ?? ''}
-                              onValueChange={value => {
-                                const selected = fieldTypes.find(x => x.name === value);
-                                if (selected) {
-                                  field.onChange(selected.id);
-                                }
-                              }}
-                              aria-invalid={fieldState.invalid}>
-                              <ComboboxInput placeholder='Select a field type' />
-                              <ComboboxContent>
-                                <ComboboxEmpty>No items found.</ComboboxEmpty>
-                                <ComboboxList>
-                                  {item => (
-                                    <ComboboxItem key={item.id} value={item.name}>
-                                      {item.name}
-                                    </ComboboxItem>
-                                  )}
-                                </ComboboxList>
-                              </ComboboxContent>
-                            </Combobox>
-                            {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
-                          </Field>
-                        )}
-                      />
+                      <FormCombobox name={`fields.${index}.fieldTypeId`} control={form.control} items={fieldTypes} placeholder='Select a field type' />
                     </TableCell>
                     <TableCell className='font-medium'>
-                      {/* List */}
-                      <Controller
-                        name={`fields.${index}.isList`}
-                        control={form.control}
-                        render={({ field, fieldState }) => (
-                          <Field data-invalid={fieldState.invalid} orientation='horizontal' className='justify-center'>
-                            <Checkbox checked={field.value} onCheckedChange={field.onChange} aria-invalid={fieldState.invalid} />
-                            {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
-                          </Field>
-                        )}
-                      />
+                      <FormCheckbox name={`fields.${index}.isList`} control={form.control} className='justify-center' />
                     </TableCell>
                     <TableCell>
-                      {/* Unique */}
-                      <Controller
-                        name={`fields.${index}.isUnique`}
-                        control={form.control}
-                        render={({ field, fieldState }) => (
-                          <Field data-invalid={fieldState.invalid} orientation='horizontal' className='justify-center'>
-                            <Checkbox checked={field.value} onCheckedChange={field.onChange} aria-invalid={fieldState.invalid} />
-                            {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
-                          </Field>
-                        )}
-                      />
+                      <FormCheckbox name={`fields.${index}.isUnique`} control={form.control} className='justify-center' />
                     </TableCell>
                     <TableCell>
-                      {/* Required */}
-                      <Controller
-                        name={`fields.${index}.isRequired`}
-                        control={form.control}
-                        render={({ field, fieldState }) => (
-                          <Field data-invalid={fieldState.invalid} orientation='horizontal' className='justify-center'>
-                            <Checkbox checked={field.value} onCheckedChange={field.onChange} aria-invalid={fieldState.invalid} />
-                            {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
-                          </Field>
-                        )}
-                      />
+                      <FormCheckbox name={`fields.${index}.isRequired`} control={form.control} className='justify-center' />
                     </TableCell>
                     <TableCell>
-                      {/* Filterable */}
-                      <Controller
-                        name={`fields.${index}.filterable`}
-                        control={form.control}
-                        render={({ field, fieldState }) => (
-                          <Field data-invalid={fieldState.invalid} orientation='horizontal' className='justify-center'>
-                            <Checkbox checked={field.value} onCheckedChange={field.onChange} aria-invalid={fieldState.invalid} />
-                            {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
-                          </Field>
-                        )}
-                      />
+                      <FormCheckbox name={`fields.${index}.filterable`} control={form.control} className='justify-center' />
                     </TableCell>
                     <TableCell className='text-right'>
                       <Button type='button' variant='destructive' onClick={() => remove(index)}>

@@ -4,7 +4,7 @@ import type AppSetting from '@/models/appsetting/appsetting';
 import { AppSettingUpdateSchema } from '@/models/appsetting/appSettingUpdateDto';
 import { setAppSettings } from '@/redux/reducers/projectSlice';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Controller, useForm, useWatch } from 'react-hook-form';
 import { toast } from 'sonner';
 import { z } from 'zod';
@@ -42,31 +42,7 @@ export default function AppSetting() {
   const isThereRole = useWatch({ control: form.control, name: 'isThereRole' });
   const currentPath = useWatch({ control: form.control, name: 'path' });
 
-  useEffect(() => {
-    if (entities == null || entities.length == 0) {
-      dispatch(fetchEntities());
-    }
-  }, [])
-
-  useEffect(() => {
-    if (!isThereUser) {
-      form.setValue('userEntityId', null);
-    }
-  }, [isThereUser]);
-
-  useEffect(() => {
-    if (!isThereRole) {
-      form.setValue('roleEntityId', null);
-    }
-  }, [isThereRole]);
-
-  useEffect(() => {
-    if (project != null) {
-      fetchAppSettings();
-    }
-  }, [project]);
-
-  const fetchAppSettings = async () => {
+  const fetchAppSettings = useCallback(async () => {
     try {
       const response = await axiosHelper.get<AppSetting>('/appSetting');
       if (response != null) {
@@ -76,7 +52,31 @@ export default function AppSetting() {
     } catch {
       toast.error('App Settings could not be loaded!');
     }
-  };
+  }, [dispatch, form]);
+
+  useEffect(() => {
+    if (entities == null || entities.length === 0) {
+      dispatch(fetchEntities());
+    }
+  }, [dispatch, entities]);
+
+  useEffect(() => {
+    if (!isThereUser) {
+      form.setValue('userEntityId', null);
+    }
+  }, [isThereUser, form]);
+
+  useEffect(() => {
+    if (!isThereRole) {
+      form.setValue('roleEntityId', null);
+    }
+  }, [isThereRole, form]);
+
+  useEffect(() => {
+    if (project != null) {
+      fetchAppSettings();
+    }
+  }, [project, fetchAppSettings]);
 
   const onSubmit = async (data: FormData) => {
     try {
@@ -98,14 +98,16 @@ export default function AppSetting() {
       setPickingFolder(true);
       // Modern File System Access API - works in Chromium-based browsers/Electron
       if ('showDirectoryPicker' in window) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const dirHandle = await (window as any).showDirectoryPicker({ mode: 'read' });
         form.setValue('path', dirHandle.name, { shouldValidate: true });
       } else {
         toast.error('Directory picker is not supported in this browser.');
       }
-    } catch (err: any) {
+    } catch (err) {
+      const error = err as { name?: string };
       // User cancelled - not an error
-      if (err?.name !== 'AbortError') {
+      if (error?.name !== 'AbortError') {
         toast.error('Could not open folder picker.');
       }
     } finally {

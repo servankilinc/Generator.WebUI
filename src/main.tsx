@@ -9,6 +9,8 @@ import Home from '@/views/home';
 import Projects from '@/views/project';
 import Entities from '@/views/entity/index';
 import Dtos from '@/views/dto/index';
+import Diagram from '@/views/diagram/index';
+import DtoDiagram from '@/views/diagram/dto-diagram';
 
 const router = createBrowserRouter([
   {
@@ -18,7 +20,9 @@ const router = createBrowserRouter([
       { index: true, Component: Home },
       { path: 'projects', Component: Projects },
       { path: 'entities', Component: Entities },
-      { path: 'dtos/:entityId', Component: Dtos }
+      { path: 'dtos/:entityId', Component: Dtos },
+      { path: 'diagram', Component: Diagram },
+      { path: 'diagram/dtos/:entityId', Component: DtoDiagram }
     ]
   }
 ]);
