@@ -3,29 +3,56 @@ import { Separator } from '@/components/ui/separator';
 import { AppSidebar } from '@/components/global/app-sidebar';
 import AppBreadcrumb from '@/components/global/app-breadcrumb';
 import { ThemeProvider } from '@/components/global/theme-provider';
+import ProjectSelector from '@/components/global/project-selector';
 import { Outlet } from 'react-router';
 import { Toaster } from '@/components/ui/sonner';
-import { useCallback, useEffect } from 'react';
-import { useAppDispatch } from '@/hooks';
+import { useCallback, useEffect, useState } from 'react';
+import { useAppDispatch, useAppSelector } from '@/hooks';
 import axiosHelper from '@/lib/axios-helper';
 import type Project from '@/models/project/project';
 import { setActiveProject } from '@/redux/reducers/projectSlice';
 
 export default function Layout() {
   const dispatch = useAppDispatch();
-  
+  const activeProject = useAppSelector(state => state.project.activeProject);
+  const [initialLoading, setInitialLoading] = useState(true);
+
   const fetchActiveProject = useCallback(async () => {
     try {
       const response = await axiosHelper.get<Project>('/activeProject');
       if (response != null) dispatch(setActiveProject(response));
     } catch (error) {
       console.error('Failed to fetch active project:', error);
+    } finally {
+      setInitialLoading(false);
     }
   }, [dispatch]);
 
   useEffect(() => {
     fetchActiveProject();
   }, [fetchActiveProject]);
+
+  // Show nothing while loading initial project check
+  if (initialLoading) {
+    return (
+      <ThemeProvider>
+        <div className='flex min-h-screen items-center justify-center'>
+          <div className='size-6 animate-spin rounded-full border-2 border-primary border-t-transparent' />
+        </div>
+        <Toaster />
+      </ThemeProvider>
+    );
+  }
+
+  // No active project — show project selector intro page
+  if (!activeProject) {
+    return (
+      <ThemeProvider>
+        <ProjectSelector />
+        <Toaster />
+      </ThemeProvider>
+    );
+  }
 
   return (
     <ThemeProvider>

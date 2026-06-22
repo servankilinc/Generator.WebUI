@@ -11,6 +11,7 @@ import Entities from '@/views/entity/index';
 import Dtos from '@/views/dto/index';
 import Diagram from '@/views/diagram/index';
 import DtoDiagram from '@/views/diagram/dto-diagram';
+import Generation from '@/views/generation';
 
 const router = createBrowserRouter([
   {
@@ -22,7 +23,8 @@ const router = createBrowserRouter([
       { path: 'entities', Component: Entities },
       { path: 'dtos/:entityId', Component: Dtos },
       { path: 'diagram', Component: Diagram },
-      { path: 'diagram/dtos/:entityId', Component: DtoDiagram }
+      { path: 'diagram/dtos/:entityId', Component: DtoDiagram },
+      { path: 'generation', Component: Generation }
     ]
   }
 ]);
