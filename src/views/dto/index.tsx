@@ -27,6 +27,15 @@ export default function Index() {
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchDtos();
+
+    const handleAiCompletion = () => {
+      fetchDtos();
+    };
+
+    window.addEventListener('ai-generation-completed', handleAiCompletion);
+    return () => {
+      window.removeEventListener('ai-generation-completed', handleAiCompletion);
+    };
   }, [fetchDtos]);
 
   if (dtos == null) {

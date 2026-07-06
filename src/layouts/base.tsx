@@ -4,6 +4,7 @@ import { AppSidebar } from '@/components/global/app-sidebar';
 import AppBreadcrumb from '@/components/global/app-breadcrumb';
 import { ThemeProvider } from '@/components/global/theme-provider';
 import ProjectSelector from '@/components/global/project-selector';
+import AiChat from '@/components/global/ai-chat';
 import { Outlet } from 'react-router';
 import { Toaster } from '@/components/ui/sonner';
 import { useCallback, useEffect, useState } from 'react';
@@ -69,6 +70,7 @@ export default function Layout() {
             </header>
             <Outlet />
             <Toaster />
+            <AiChat />
           </main>
         </SidebarInset>
       </SidebarProvider>

@@ -96,6 +96,12 @@ export default function DtoDiagramView() {
     buildDiagram();
   }, [entities, entitiesLoading, entityId, navigate, setNodes, setEdges, refreshKey]);
 
+  useEffect(() => {
+    const handleAiCompletion = () => setRefreshKey(prev => prev + 1);
+    window.addEventListener('ai-generation-completed', handleAiCompletion);
+    return () => window.removeEventListener('ai-generation-completed', handleAiCompletion);
+  }, []);
+
   const onConnect = useCallback(
     (params: Connection) => setEdges(eds => addEdge(params, eds)),
     [setEdges]
